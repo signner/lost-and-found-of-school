@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shiro.mapper.SchoolMapper">
+    <select id="getSchool" resultType="school" parameterType="Integer">
+        select s.sid id,s.name from school s where s.sid = #{sid}
+    </select>
+
+    <select id="getSchoolByName" resultType="school" parameterType="String">
+        select s.sid id,s.name from school s where s.name = #{name}
+    </select>
+
+    <select id="getSchoolImages" resultType="String" parameterType="String">
+        select i.img from images i where i.sid in (select sid from school where name=#{name}) limit 0,4
+    </select>
+
+    <insert id="addImages" parameterType="images">
+        INSERT into images(sid,img) VALUES ((SELECT school.sid FROM school WHERE school.name = #{school}),#{img})
+    </insert>
+</mapper>

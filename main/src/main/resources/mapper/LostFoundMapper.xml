@@ -1,0 +1,89 @@
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace命名空间，为了对sql语句进行隔离，方便管理，mapper开发dao方式，使用namespace有特殊作用  
+mapper代理开发时将namespace指定为mapper接口的全限定名  
+ -->
+<!--suppress ALL -->
+<mapper namespace="com.shiro.mapper.LostFoundMapper">
+<!--在mapper.xml文件中配置很多的sql语句，执行每个sql语句时，封装为MappedStatement对象 
+mapper.xml以statement为单位管理sql语句  
+ -->
+	<!--connectPerson是一个用户对象-->
+	<!-- 添加失物招领记录 -->
+	<insert id="addLostFound" parameterType="lostFound">
+		insert into t_lostFound(title,goodsName,pickUpTime,pickUpPlace,contents,connectPerson,phone,goodsPhoto,addTime) values
+		(#{title},#{goodsName},#{pickUpTime},#{pickUpPlace},#{contents},#{connectPerson.uid},#{phone},#{goodsPhoto},#{addTime})
+	</insert>
+
+	<!-- 按照查询条件分页查询失物招领记录 -->
+	<select id="queryLostFound" resultMap="lostFoundMap" >
+		select t_lostFound.* from t_lostFound,userinfo ${where}  and t_lostFound.connectPerson = userinfo.uid limit #{startIndex},#{pageSize}
+	</select>
+	<resultMap id="lostFoundMap" type="lostFound">
+        <id property="lostFoundId" column="lostFoundId" />
+		<association property="connectPerson" column="connectPerson" select="com.shiro.mapper.UserInfoMapper.getUserInfo" />
+    </resultMap>
+
+    <!-- 按照查询条件查询所有失物招领记录 -->
+	<select id="queryLostFoundList" resultMap="lostFoundMap" >
+		select t_lostFound.* from t_lostFound,userinfo ${where} and t_lostFound.connectPerson = userinfo.uid
+	</select>
+
+    <!-- 按照查询条件的失物招领记录数 -->
+	<select id="queryLostFoundCount" resultType="int">
+		select count(*) from t_lostFound,userinfo ${where}  and t_lostFound.connectPerson = userinfo.uid
+	</select>
+
+	<!-- 根据主键查询某个失物招领记录 -->
+	<select id="getLostFound" parameterType="int" resultMap="lostFoundMap">
+		select * from t_lostFound where t_lostFound.lostFoundId = #{lostFoundId}
+	</select>
+
+	<!-- 更新失物招领记录 -->
+	<update id="updateLostFound" parameterType="lostFound">
+		update t_lostFound
+		<trim prefix="set" suffixOverrides="," suffix=" where lostFoundId = #{lostFoundId} ">
+			<if test = " title != null and title.length()>0 ">
+				title=#{title},
+			</if>
+			<if test = " goodsName != null and goodsName.length()>0 ">
+				goodsName=#{goodsName},
+			</if>
+			<if test = " pickUpTime != null ">
+				pickUpTime=#{pickUpTime},
+			</if>
+			<if test = " goodsPhoto != null and goodsPhoto.length()>0 ">
+				goodsPhoto=#{goodsPhoto},
+			</if>
+			<if test = " pickUpPlace != null and pickUpPlace.length()>0 ">
+				pickUpPlace=#{pickUpPlace},
+			</if>
+			<if test = " contents != null and contents.length()>0 ">
+				contents=#{contents},
+			</if>
+			<if test = " connectPerson.uid != null">
+				connectPerson=#{connectPerson.uid},
+			</if>
+			<if test = " phone != null and phone.length()>0 ">
+				phone=#{phone},
+			</if>
+			<if test = " addTime != null">
+				addTime=#{addTime},
+			</if>
+			<if test = " state != null">
+				t_lostFound.state=#{state},
+			</if>
+		</trim>
+	</update>
+
+	<!-- 删除失物招领记录 -->
+	<delete id="deleteLostFound" parameterType="String">
+		SET FOREIGN_KEY_CHECKS = 0;
+		delete from t_lostFound where lostFoundId in (${lostFoundIds});
+		SET FOREIGN_KEY_CHECKS = 1;
+	</delete>
+
+	<!--&lt;!&ndash; 查询超过2个月的数据&ndash;&gt;-->
+	<select id="overTwoMonth" resultType="Integer">
+		select lostFoundId from t_lostfound where t_lostfound.addTime &lt;= date_sub(now(), interval 60 day)
+	</select>
+</mapper>

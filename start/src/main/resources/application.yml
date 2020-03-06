@@ -1,0 +1,65 @@
+#配置数据源
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/bishe1?serverTimezone=Hongkong&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    username: root
+    #    url: jdbc:mysql://101.200.44.161:3306/bishe1?serverTimezone=Hongkong&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    #    username: shen
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    # druid参数调优（可选）
+    # 初始化大小，最小，最大
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    # 配置获取连接等待超时的时间
+    maxWait: 60000
+    # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+    timeBetweenEvictionRunsMillis: 60000
+    # 配置一个连接在池中最小生存的时间，单位是毫秒
+    minEvictableIdleTimeMillis: 300000
+    # 打开PSCache，并且指定每个连接上PSCache的大小
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    # 配置监控统计拦截的filters
+    filters: stat
+    # asyncInit是1.1.4中新增加的配置，如果有initialSize数量较多时，打开会加快应用启动时间
+    asyncInit: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+
+springfox.documentation.swagger.v2.path: /api-docs
+
+server:
+  port: 8080
+  #  port: 8001
+  address: 127.0.0.1
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.shiro.pojo
+  config-location: classpath:mybatisConfig.xml
+
+
+#自定义参数
+urlPath:
+  #图片上传存储路径
+  local: E:/phpStudy_64/phpstudy_pro/WWW/temp/
+  #http访问路径
+  online: http://localhost/temp/
+#noneImg: null
+
+#urlPath:
+#  local: C:/Users/Administrator/Desktop/phpStudy_2016.11.03/phpstudy/nginx/html/temp/
+#  online: http://sjava.top/temp/
+#noneImg: http://sjava.top/temp/%E4%B8%8B%E8%BD%BD.jpg
+
+rows: 3
+#密码加盐方式
+salt: 2014-02-28

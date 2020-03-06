@@ -1,0 +1,97 @@
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace命名空间，为了对sql语句进行隔离，方便管理，mapper开发dao方式，使用namespace有特殊作用  
+mapper代理开发时将namespace指定为mapper接口的全限定名  
+ -->
+<!--suppress ALL -->
+<mapper namespace="com.shiro.mapper.LookingForMapper">
+<!--在mapper.xml文件中配置很多的sql语句，执行每个sql语句时，封装为MappedStatement对象 
+mapper.xml以statement为单位管理sql语句  
+ -->
+	<!--userObj是一个对象，对应userInfo的主键，已设置外键-->
+	<!-- 添加寻物启事记录 -->
+	<insert id="addLookingFor" parameterType="lookingFor">
+		insert into t_lookingFor(title,goodsName,goodsPhoto,lostTime,lostPlace,goodDesc,reward,telephone,userObj,addTime) values 
+		(#{title},#{goodsName},#{goodsPhoto},#{lostTime},#{lostPlace},#{goodDesc},#{reward},#{telephone},#{userObj.uid},#{addTime})
+	</insert>
+
+	<!-- 按照查询条件分页查询寻物启事记录 -->
+	<select id="queryLookingFor" resultMap="lookingForMap" >
+		select t_lookingFor.* from t_lookingFor,userinfo ${where} and t_lookingFor.userObj = userinfo.uid limit #{startIndex},#{pageSize}
+	</select>
+	<resultMap id="lookingForMap" type="lookingFor">
+        <id property="lookingForId" column="lookingForId" />
+		<!--userObj对应userInfo的uid，即主键-->
+        <association property="userObj" column="userObj" select="com.shiro.mapper.UserInfoMapper.getUserInfo" />
+    </resultMap>
+
+    <!-- 按照查询条件查询所有寻物启事记录 -->
+	<select id="queryLookingForList" resultMap="lookingForMap" >
+		select t_lookingFor.* from t_lookingFor,userinfo ${where} and t_lookingFor.userObj = userinfo.uid order by t_lookingFor.state
+	</select>
+
+    <!-- 按照查询条件的寻物启事记录数 -->
+	<select id="queryLookingForCount" resultType="int">
+		select count(*) from t_lookingFor,userinfo ${where} and t_lookingFor.userObj = userinfo.uid
+	</select>
+
+	<!-- 根据主键查询某个寻物启事记录 -->
+	<select id="getLookingFor" parameterType="int" resultMap="lookingForMap">
+		select * from t_lookingFor where t_lookingFor.lookingForId = #{lookingForId}
+	</select>
+
+	<!-- 更新寻物启事记录 -->
+	<update id="updateLookingFor" parameterType="lookingFor">
+		update t_lookingFor
+		<trim prefix="set" suffixOverrides="," suffix=" where lookingForId = #{lookingForId} ">
+			<if test = " title != null and title.length()>0 ">
+				title=#{title},
+			</if>
+			<if test = " goodsName != null and goodsName.length()>0 ">
+				goodsName=#{goodsName},
+			</if>
+			<if test = " lostTime != null ">
+				lostTime=#{lostTime},
+			</if>
+			<if test = " goodsPhoto != null and goodsPhoto.length()>0 ">
+				goodsPhoto=#{goodsPhoto},
+			</if>
+			<if test = " lostPlace != null and lostPlace.length()>0 ">
+				lostPlace=#{lostPlace},
+			</if>
+			<if test = " goodDesc != null and goodDesc.length()>0 ">
+				goodDesc=#{goodDesc},
+			</if>
+			<if test = " userObj.uid != null ">
+				userObj=#{userObj.uid},
+			</if>
+			<if test = " telephone != null and telephone.length()>0 ">
+				telephone=#{telephone},
+			</if>
+			<if test = " addTime != null ">
+				addTime=#{addTime},
+			</if>
+			<if test = " reward != null and reward.length()>0 ">
+				reward=#{reward},
+			</if>
+			<if test = " state != null">
+				t_lookingFor.state=#{state},
+			</if>
+		</trim>
+	</update>
+
+	<!-- 删除寻物启事记录 -->
+	<delete id="deleteLookingFor" parameterType="String">
+ 		SET FOREIGN_KEY_CHECKS = 0;
+		delete from t_lookingFor where lookingForId in (${lookingForIds});
+		SET FOREIGN_KEY_CHECKS = 1;
+	</delete>
+
+	<!-- 查询超过2个月的数据-->
+	<select id="overTwoMonth" resultType="java.lang.Integer">
+        select lookingForId from t_lookingfor where t_lookingfor.addTime &lt;= date_sub(now(), interval 60 day);
+	</select>
+
+    <select id="test" resultType="int">
+        select lookingForId from t_lookingfor where lookingForId=2
+	</select>
+</mapper>

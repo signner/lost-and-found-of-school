@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--suppress SqlDialectInspection -->
+<mapper namespace="com.shiro.mapper.UserInfoMapper">
+
+    <resultMap id="userInfoMap" type="userInfo">
+        <association property="school" column="sid" select="com.shiro.mapper.SchoolMapper.getSchool"/>
+    </resultMap>
+
+    <!--通过uid查找一个对象-->
+    <select id="getUserInfo" resultMap="userInfoMap" parameterType="Integer">
+        select * from userinfo u where u.uid = #{uid}
+    </select>
+
+    <!--通过username查找一个对象-->
+    <select id="getUserInfoByUsername" resultMap="userInfoMap" parameterType="String">
+        select * from userinfo u where u.username = #{username}
+    </select>
+
+    <!--添加一个用户-->
+    <insert id="addUserInfo" parameterType="userInfo">
+        INSERT INTO userInfo(username,avatar,password,real_name,phone,email,sex,birth,role,sid)
+            VALUES(#{username},#{avatar},#{password},#{realName},#{phone},#{email},#{sex},
+            #{birth},'user',(SELECT sid FROM school WHERE `name`=#{school.name}))
+    </insert>
+
+    <!--/*更新信息*/-->
+    <update id="updateUserInfo" parameterType="userInfo">
+        UPDATE userInfo u
+        <trim prefix="set" suffixOverrides="," suffix="   WHERE u.uid = #{uid}">
+            <if test = " username != null and username.length()>0">
+                             u.username = #{username} ,
+            </if>
+
+            <if test = " realName != null and realName.length()>0">
+                             u.real_name = #{realName},
+            </if>
+
+            <if test = " phone != null and phone.length()>0">
+                             u.phone = #{phone},
+            </if>
+            <if test = " email != null and email.length()>0">
+                             u.email = #{email},
+            </if>
+            <if test = " sex != null and sex.length()>0">
+                             u.sex = #{sex},
+            </if>
+            <if test = " birth != null ">
+                             u.birth = #{birth},
+            </if>
+            <if test = " role != null and role.length()>0">
+                             u.role = #{role},
+            </if>
+            <if test = " school.id != 0 ">
+                             u.sid = #{school.id},
+            </if>
+            <if test = " password != null and password.length()>0">
+                             u.password=#{password},
+            </if>
+            <if test = " avatar != null and avatar.length()>0 ">
+                             u.avatar=#{avatar},
+            </if>
+        </trim>
+
+    </update>
+
+    <!--/*删除用户*/-->
+<!--&#45;&#45;         delete from userInfo where uid in (${uids})-->
+    <delete id="deleteUserInfo" parameterType="String">
+        SET FOREIGN_KEY_CHECKS = 0;
+        DELETE t_claim,t_lostfound FROM t_claim,t_lostfound,userinfo WHERE 1=1
+        AND t_claim.lostFoundObj = t_lostfound.lostFoundId
+        AND t_lostfound.connectPerson = userinfo.uid
+        AND userinfo.username=#{username};
+
+        DELETE FROM t_claim where 1=1 AND t_claim.personName=#{username};
+
+        DELETE t_praise,t_lookingfor from t_praise,t_lookingfor,userinfo WHERE 1=1
+        AND t_praise.lookingFor = t_lookingfor.lookingForId
+        AND t_lookingfor.userObj = userinfo.uid
+        AND userinfo.username = #{username};
+
+        DELETE FROM t_praise where t_praise.praiseUserObj=#{username};
+
+        DELETE FROM userinfo where userinfo.username = #{username};
+
+        SET FOREIGN_KEY_CHECKS = 1;
+    </delete>
+
+    <!--分页查询-->
+    <select id="queryUserInfoList" resultMap="userInfoMap">
+        select userinfo.* from userinfo,school
+        ${where}
+        and userinfo.sid = school.sid order by userinfo.sid limit #{startIndex},#{pageSize}
+    </select>
+
+    <!--查询所有-->
+    <select id="queryUserInfo" resultMap="userInfoMap">
+        select userinfo.* from userinfo,school
+        ${where}
+        and userinfo.sid = school.sid
+    </select>
+
+    <select id="queryUserInfoForCount" resultType="int">
+		select count(*) from userinfo,school ${where} and userinfo.sid = school.sid
+	</select>
+</mapper>
